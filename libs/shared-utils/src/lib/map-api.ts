@@ -51,14 +51,14 @@ export const getCoordinatesFromQuadKey = (quadKey: string) => {
   return { x, y };
 };
 
-type Coordinate = {
+export type Coordinate = {
   x: number;
   y: number;
 } & {
   __typeName: 'Coordinate';
 };
 
-type CoordinateRounded = {
+export type CoordinateRounded = {
   x: number;
   y: number;
 } & {

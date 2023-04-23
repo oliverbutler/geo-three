@@ -1,9 +1,14 @@
-import gpx from '../assets/weather-hill.gpx?raw';
 import {
-  getCoordinatesFromLatLong,
   getQuadKeyFromCoordinates,
-  getCoordinatesFromQuadKey,
+  getCoordinatesFromLatLong,
+  CoordinateRounded,
+  getPreciseCoordinatesFromLatLong,
 } from '@geo-three/shared-utils';
+import { useEffect, useRef } from 'react';
+import gpx from '../assets/weather-hill.gpx?raw';
+
+const origin = { x: 16125, y: 10434 };
+const radius = 12;
 
 const extractRouteFromGpxString = (
   gpxString: string
@@ -34,83 +39,141 @@ const extractRouteFromGpxString = (
 
 const route = extractRouteFromGpxString(gpx);
 
-const quadKeys = new Set<string>();
-
-route.forEach((point) => {
-  const { x, y } = getCoordinatesFromLatLong(point.lat, point.lng);
-
-  const quadKey = getQuadKeyFromCoordinates(x, y);
-
-  quadKeys.add(quadKey);
-});
-
-const coordinateGrid = Array.from(quadKeys).map((quadKey) => {
-  const { x, y } = getCoordinatesFromQuadKey(quadKey);
-
-  return { x, y };
-});
-
-const ImageTile = (props: { x: number; y: number }) => {
-  const quadKey = getQuadKeyFromCoordinates(props.x, props.y);
-
-  return (
-    <img
-      src={`http://localhost:3000/tile?quadKey=${quadKey}&type=os`}
-      alt={quadKey}
-      width={100}
-      height={100}
-    />
-  );
-};
-
-// Take the grid e.g. [{x: 16122, y: 10433}, {x: 16123, y: 10433}]
-// and make it relative to the first point e.g. [{x: 0, y: 0}, {x: 1, y: 0}]
-const relativeCoordinateGrid = coordinateGrid.map((coordinate, index) => {
-  if (index === 0) {
+const routeAsCoordinates = route
+  .map((point) => {
+    return getPreciseCoordinatesFromLatLong(point.lat, point.lng);
+  })
+  .map((coordinate) => {
     return {
-      relative: {
-        x: 0,
-        y: 0,
-      },
-      absolute: coordinate,
+      x: coordinate.x - origin.x,
+      y: coordinate.y - origin.y,
     };
+  });
+
+const GRID_PIXEL_SIZE = 100;
+
+const getCoordinatesWithinBoundaries = (
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): CoordinateRounded[] => {
+  const coordinates: CoordinateRounded[] = [];
+
+  for (let i = 0; i < width; i++) {
+    for (let j = 0; j < height; j++) {
+      coordinates.push({ x: x + i, y: y + j } as CoordinateRounded);
+    }
   }
 
-  const firstCoordinate = coordinateGrid[0];
+  return coordinates;
+};
 
-  return {
-    relative: {
-      x: coordinate.x - firstCoordinate.x,
-      y: coordinate.y - firstCoordinate.y,
-    },
-    absolute: coordinate,
-  };
-});
+const coordinatesWithinBoundaries = getCoordinatesWithinBoundaries(
+  -(radius / 2),
+  -(radius / 2),
+  radius,
+  radius
+);
 
 function App() {
-  return (
-    <div>
-      <div
-        style={{
-          position: 'relative',
-        }}
-      >
-        {relativeCoordinateGrid.map((coordinate) => {
-          return (
-            <div
-              key={`${coordinate.absolute.x}-${coordinate.absolute.y}`}
-              style={{
-                position: 'absolute',
-                left: coordinate.relative.x * 100,
-                top: coordinate.relative.y * 100,
-                zIndex: 50,
-              }}
-            >
-              <ImageTile x={coordinate.absolute.x} y={coordinate.absolute.y} />
-            </div>
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+
+      if (ctx) {
+        coordinatesWithinBoundaries.forEach((coordinate) => {
+          const image = new Image();
+          image.src = `http://localhost:3000/tile?quadKey=${getQuadKeyFromCoordinates(
+            coordinate.x + origin.x,
+            coordinate.y + origin.y
+          )}&type=os`;
+
+          image.onload = () => {
+            ctx.drawImage(
+              image,
+              coordinate.x * GRID_PIXEL_SIZE + (GRID_PIXEL_SIZE * radius) / 2,
+              coordinate.y * GRID_PIXEL_SIZE + (GRID_PIXEL_SIZE * radius) / 2,
+              GRID_PIXEL_SIZE,
+              GRID_PIXEL_SIZE
+            );
+          };
+        });
+      }
+    }
+
+    return () => {
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const canvas = overlayCanvasRef.current;
+
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+
+      if (ctx) {
+        routeAsCoordinates.forEach((coordinate) => {
+          // Draw circle at coordinate
+
+          ctx.beginPath();
+          ctx.arc(
+            coordinate.x * GRID_PIXEL_SIZE + (GRID_PIXEL_SIZE * radius) / 2,
+            coordinate.y * GRID_PIXEL_SIZE + (GRID_PIXEL_SIZE * radius) / 2,
+            1,
+            0,
+            2 * Math.PI
           );
-        })}
-      </div>
+
+          ctx.fillStyle = 'red';
+          ctx.fill();
+        });
+      }
+    }
+
+    return () => {
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+
+        if (ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+    };
+  }, []);
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <canvas
+        ref={canvasRef}
+        width={GRID_PIXEL_SIZE * radius}
+        height={GRID_PIXEL_SIZE * radius}
+        style={{
+          border: '1px solid black',
+        }}
+      />
+      <canvas
+        ref={overlayCanvasRef}
+        width={GRID_PIXEL_SIZE * radius}
+        height={GRID_PIXEL_SIZE * radius}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+        }}
+      />
     </div>
   );
 }
