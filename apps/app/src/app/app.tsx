@@ -1,12 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
 import gpx from '../assets/weather-hill.gpx?raw';
 import {
-  getCoordinatesFromQuadKey,
-  getQuadKey,
-  getTileUrl,
   getCoordinatesFromLatLong,
-  getPreciseCoordinatesFromLatLong,
-} from '../map-api/map-api';
+  getQuadKeyFromCoordinates,
+  getCoordinatesFromQuadKey,
+} from '@geo-three/shared-utils';
 
 const extractRouteFromGpxString = (
   gpxString: string
@@ -42,7 +39,7 @@ const quadKeys = new Set<string>();
 route.forEach((point) => {
   const { x, y } = getCoordinatesFromLatLong(point.lat, point.lng);
 
-  const quadKey = getQuadKey(x, y);
+  const quadKey = getQuadKeyFromCoordinates(x, y);
 
   quadKeys.add(quadKey);
 });
@@ -54,13 +51,16 @@ const coordinateGrid = Array.from(quadKeys).map((quadKey) => {
 });
 
 const ImageTile = (props: { x: number; y: number }) => {
-  const tileUrl = useMemo(() => {
-    const tileUrl = getTileUrl(props.x, props.y, 'OS');
+  const quadKey = getQuadKeyFromCoordinates(props.x, props.y);
 
-    return tileUrl;
-  }, [props.x, props.y]);
-
-  return <img src={tileUrl} width={100} height={100} />;
+  return (
+    <img
+      src={`http://localhost:3000/tile?quadKey=${quadKey}&type=os`}
+      alt={quadKey}
+      width={100}
+      height={100}
+    />
+  );
 };
 
 // Take the grid e.g. [{x: 16122, y: 10433}, {x: 16123, y: 10433}]

@@ -12,6 +12,8 @@ specifiers:
   '@nrwl/vite': 15.9.2
   '@nrwl/workspace': 15.9.2
   '@testing-library/react': 14.0.0
+  '@ts-rest/core': ^3.19.2
+  '@ts-rest/express': ^3.19.2
   '@types/express': ~4.17.13
   '@types/jest': ^29.4.0
   '@types/node': 18.14.2
@@ -46,13 +48,17 @@ specifiers:
   vite-plugin-eslint: ^1.8.1
   vite-tsconfig-paths: ^4.0.2
   vitest: ^0.25.8
+  zod: ^3.21.4
 
 dependencies:
+  '@ts-rest/core': 3.19.2_zod@3.21.4
+  '@ts-rest/express': 3.19.2_puwcdftxrnilus2wtz22ttxp7m
   '@types/express': 4.17.17
   express: 4.18.2
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   tslib: 2.5.0
+  zod: 3.21.4
 
 devDependencies:
   '@nrwl/esbuild': 15.9.2_4q5iesyzyuva65krce6kpsrg3m
@@ -2891,6 +2897,32 @@ packages:
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
     engines: {node: '>=10.13.0'}
     dev: true
+
+  /@ts-rest/core/3.19.2_zod@3.21.4:
+    resolution: {integrity: sha512-ZLKVgJTHIByNYbE06yylKoqGII3XELTMzio1UfToR2abVTt7zZUw+KjNZnXC8XsIFhf/EdlsjcHRcgrvbevlzw==}
+    peerDependencies:
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      zod: 3.21.4
+    dev: false
+
+  /@ts-rest/express/3.19.2_puwcdftxrnilus2wtz22ttxp7m:
+    resolution: {integrity: sha512-sdrAQV3n7UpAZHBvfsbZytzp+5LggP1wouOhUg3HQfOFdXBWLeTZ7Il8ggNxFo1kwm9BBL8m7N1Lki5zQ0Lo6g==}
+    peerDependencies:
+      '@ts-rest/core': 3.19.2
+      express: ^4.0.0
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+    dependencies:
+      '@ts-rest/core': 3.19.2_zod@3.21.4
+      express: 4.18.2
+      zod: 3.21.4
+    dev: false
 
   /@tsconfig/node10/1.0.9:
     resolution: {integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA==}
@@ -10401,3 +10433,7 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  /zod/3.21.4:
+    resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
+    dev: false

@@ -3,14 +3,14 @@ import {
   decodeLatLongFromCoordinates,
   getPreciseCoordinatesFromLatLong,
   getCoordinatesFromQuadKey,
-  getQuadKey,
+  getQuadKeyFromCoordinates,
   getTileUrl,
   getCoordinatesFromLatLong,
 } from './map-api';
 
 describe('OSDecoder', () => {
   it('can decode a position in the lakes (Loadpot Hill)', () => {
-    const result = getQuadKey(16125, 10434);
+    const result = getQuadKeyFromCoordinates(16125, 10434);
 
     expect(result).toBe('031311033111121');
   });
@@ -18,23 +18,21 @@ describe('OSDecoder', () => {
   it('can decode one position relative to another', () => {
     // One down from the previous position
 
-    const result = getQuadKey(16125, 10435);
+    const result = getQuadKeyFromCoordinates(16125, 10435);
 
     expect(result).toBe('031311033111123');
   });
 
   it('can get the URL for a tile', () => {
-    const result = getTileUrl(16125, 10434, 'OS');
+    const result = getTileUrl(16125, 10434, 'OS', 'key');
 
     expect(result).toBe(
-      `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/031311033111121?mkt=en-GB&ur=gb&it=G,OS,BF,RL&og=2196&n=t&o=webp,95&cstl=s23&key=${
-        import.meta.env['NX_MAP_KEY']
-      }`
+      `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/031311033111121?mkt=en-GB&ur=gb&it=G,OS,BF,RL&og=2196&n=t&o=webp,95&cstl=s23&key=key`
     );
   });
 
   it('can get the URL for a satellite tile', () => {
-    const result = getTileUrl(16125, 10434, 'Satellite');
+    const result = getTileUrl(16125, 10434, 'Satellite', 'key');
 
     expect(result).toBe(
       'https://t.ssl.ak.tiles.virtualearth.net/tiles/a031311033111121.jpeg?g=13555&n=z&prx=1'
@@ -67,24 +65,20 @@ describe('OSDecoder', () => {
   it('cam get a tile URL from lat, long', () => {
     const { x, y } = getCoordinatesFromLatLong(54.45316, -3.211783);
 
-    const result = getTileUrl(x, y, 'OS');
+    const result = getTileUrl(x, y, 'OS', 'key');
 
     expect(result).toBe(
-      `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/031311033031031?mkt=en-GB&ur=gb&it=G,OS,BF,RL&og=2196&n=t&o=webp,95&cstl=s23&key=${
-        import.meta.env['NX_MAP_KEY']
-      }`
+      `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/031311033031031?mkt=en-GB&ur=gb&it=G,OS,BF,RL&og=2196&n=t&o=webp,95&cstl=s23&key=key`
     );
   });
 
   it("can get a tile URL from a lat, long that's in an obscure place", () => {
     const { x, y } = getCoordinatesFromLatLong(54.172192, -1.391744);
 
-    const result = getTileUrl(x, y, 'OS');
+    const result = getTileUrl(x, y, 'OS', 'key');
 
     expect(result).toBe(
-      `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/031311132222221?mkt=en-GB&ur=gb&it=G,OS,BF,RL&og=2196&n=t&o=webp,95&cstl=s23&key=${
-        import.meta.env['NX_MAP_KEY']
-      }`
+      `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/031311132222221?mkt=en-GB&ur=gb&it=G,OS,BF,RL&og=2196&n=t&o=webp,95&cstl=s23&key=$key`
     );
   });
 

@@ -1,22 +1,20 @@
-const generateOsUrl = (quadKey: string) => {
-  return `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/${quadKey}?mkt=en-GB&ur=gb&it=G,OS,BF,RL&og=2196&n=t&o=webp,95&cstl=s23&key=${
-    import.meta.env['NX_MAP_KEY']
-  }`;
+export const generateOsUrl = (quadKey: string, key: string) => {
+  return `https://t.ssl.ak.dynamic.tiles.virtualearth.net/comp/ch/${quadKey}?mkt=en-GB&ur=gb&it=G,OS,BF,RL&og=2196&n=t&o=webp,95&cstl=s23&key=${key}`;
 };
 
-const generateSatelliteUrl = (quadKey: string) => {
+export const generateSatelliteUrl = (quadKey: string) => {
   return `https://t.ssl.ak.tiles.virtualearth.net/tiles/a${quadKey}.jpeg?g=13555&n=z&prx=1`;
 };
 
-export const getQuadKey = (x: number, y: number) => {
+export const getQuadKeyFromCoordinates = (x: number, y: number) => {
   const z = 15;
 
   let n: number;
   let quadKey = '';
 
   for (let a = z; a > 0; a--) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    (n = 1 << (a - 1)), (quadKey += (x & n ? 1 : 0) + (y & n ? 2 : 0));
+    n = 1 << (a - 1);
+    quadKey += (x & n ? 1 : 0) + (y & n ? 2 : 0);
   }
 
   return quadKey;
@@ -117,11 +115,16 @@ export const decodeLatLongFromCoordinates = (x: number, y: number) => {
   };
 };
 
-export const getTileUrl = (x: number, y: number, type: 'OS' | 'Satellite') => {
-  const quadKey = getQuadKey(x, y);
+export const getTileUrl = (
+  x: number,
+  y: number,
+  type: 'OS' | 'Satellite',
+  key: string
+) => {
+  const quadKey = getQuadKeyFromCoordinates(x, y);
 
   if (type === 'OS') {
-    return generateOsUrl(quadKey);
+    return generateOsUrl(quadKey, key);
   } else {
     return generateSatelliteUrl(quadKey);
   }
