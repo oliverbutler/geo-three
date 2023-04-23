@@ -23,6 +23,8 @@ export default defineConfig({
     }),
   ],
 
+  envPrefix: 'NX_',
+
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [
